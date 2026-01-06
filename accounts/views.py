@@ -1,4 +1,6 @@
+from datetime import timedelta
 import random
+import os
 
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate, get_user_model
@@ -6,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.db.models import Q, Count
+from django.utils import timezone
 
 from notifications.models import Notification
 from utils.pagination import get_pagination_context
@@ -22,7 +25,7 @@ from .forms import (
     ResetPasswordForm,
     AccountEditForm,
     AccountDeleteForm,
-    StoryCreateForm
+    StoryCreateForm,
 )
 
 
@@ -213,7 +216,9 @@ class ProfileView(LoginRequiredMixin, View):
 
     def get(self, request, **kwargs):
         user = get_object_or_404(User, username=kwargs['username'])
-        stories = user.stories.all()
+        stories = user.stories.filter(
+            created_at__gte = timezone.now() - timedelta(hours=24)
+        )
         is_followed = Relation.objects.filter(from_user=request.user, to_user=user).exists()
         return render(request, self.template_name, {
             'user': user,
@@ -267,6 +272,9 @@ class AccountEditView(LoginRequiredMixin, OwnerRequiredMixin, View):
                 user.website_url = cd['website_url']
 
                 if cd['image'] is not None:
+                    if user.image:
+                        os.remove(user.image.path)
+                        user.image.delete()
                     user.image = cd['image']
 
                 user.save()
@@ -282,6 +290,7 @@ class ProfileImageDeleteView(LoginRequiredMixin, OwnerRequiredMixin, View):
         user = get_object_or_404(User, username=kwargs['username'])
 
         if user.image:
+            os.remove(user.image.path)
             user.image.delete()
             messages.success(request, 'Successfully deleted profile image', 'info')
         return redirect(user.get_profile_url())

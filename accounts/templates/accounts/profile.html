@@ -143,6 +143,34 @@
                     {% endif %}
                 </div>
             </div>
+            <div class="card border-dark mt-3 shadow-sm">
+                <div class="card-header bg-dark text-light">
+                    Gallery ({{ user.gallery.count }})
+                </div>
+                <div class="card-body">
+                    {% if gallery_images %}
+                        <div class="row">
+                            {% for image in gallery_images %}
+                                {% if forloop.counter <= 9 %}
+                                    <div class="col-md-4 mb-3">
+                                        <div class="border rounded bg-light p-2 text-center">
+                                            <img src="{{ image.image.url }}"
+                                                class="img-fluid rounded"
+                                                style="object-fit:cover; width:100%; height:200px;"
+                                                alt="gallery image">
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <h5 class="text-muted">No gallery images yet 😕</h5>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
