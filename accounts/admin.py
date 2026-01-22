@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Relation, Story
+from .models import Relation, Story, GalleryImage
 from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 
@@ -51,3 +51,9 @@ class StoryAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'created_at']
     list_filter = ['user', 'created_at']
     search_fields = ['content']
+
+
+@admin.register(GalleryImage)
+class GalleryImageAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'created_at']
+    list_filter = ['user', 'created_at']

@@ -1,14 +1,14 @@
+from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AdminUserCreationForm, UserChangeForm
-from django.core.exceptions import ValidationError
-from django import forms
+from django.forms import ValidationError
 
 from utils.validators import (
     UsernameValidator,
     NameValidator,
     URLValidator,
 )
-from .models import Story
+from .models import Story, GalleryImage
 
 
 User = get_user_model()
@@ -33,36 +33,36 @@ class CustomUserChangeForm(UserChangeForm):
 
 class BaseUserForm(forms.Form):
     username = forms.CharField(
-        max_length=100,
+        max_length=30,
         label='',
         validators=[UsernameValidator()],
         widget=forms.TextInput(attrs={
-            'placeholder': 'Your Username',
+            'placeholder': 'Username...',
             'class': 'form-control',
         }),
     )
     email = forms.EmailField(
         label='', 
         widget=forms.EmailInput(attrs={
-            'placeholder': 'Your Email Address',
+            'placeholder': 'Email Address...',
             'class': 'form-control',
         }),
     )
     first_name = forms.CharField(
-        max_length=100, 
+        max_length=15, 
         label='', 
-        validators=[NameValidator(field_name='First Name')],
+        validators=[NameValidator('First Name')],
         widget=forms.TextInput(attrs={
-            'placeholder': 'Your First Name',
+            'placeholder': 'FirstName...',
             'class': 'form-control',
         }),
     )
     last_name = forms.CharField(
-        max_length=100,
+        max_length=15,
         label='',
-        validators=[NameValidator(field_name='Last Name')],
+        validators=[NameValidator('Last Name')],
         widget=forms.TextInput(attrs={
-            'placeholder': 'Your Last Name',
+            'placeholder': 'LastName...',
             'class': 'form-control',
         }),
     )
@@ -70,7 +70,7 @@ class BaseUserForm(forms.Form):
         max_length=15,
         label='',
         widget=forms.TextInput(attrs={
-            'placeholder': 'Your Phone Number',
+            'placeholder': 'Phone Number...',
             'class': 'form-control',
         }),
     )
@@ -78,65 +78,68 @@ class BaseUserForm(forms.Form):
 
 class RegisterForm(BaseUserForm):
     password = forms.CharField(
-        max_length=200,
+        max_length=128,
         min_length=4,
         label='', 
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'Your Password',
+            'placeholder': 'Password...',
             'class': 'form-control',
         }),
     )
     confirm_password = forms.CharField(
-        max_length=200,
+        max_length=128,
         min_length=4,
         label='', 
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'Confirm Password',
+            'placeholder': 'Confirm Password...',
             'class': 'form-control',
         }),
     )
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
+
         if User.objects.filter(username=username).exists():
-            raise ValidationError('This username already exists')
+            raise ValidationError('This username already exists.')
         return username
     
     def clean_email(self):
         email = self.cleaned_data.get('email')
+
         if User.objects.filter(email=email).exists():
-            raise ValidationError('This email address already exists')
+            raise ValidationError('This email address already exists.')
         return email
     
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number')
+
         if User.objects.filter(phone_number=phone_number).exists():
-            raise ValidationError('This phone number already exists')
+            raise ValidationError('This phone number already exists.')
         return phone_number
-    
+
     def clean(self):
         cd = super().clean()
         password = cd.get('password')
         confirm_password = cd.get('confirm_password')
 
-        if password and confirm_password and password != confirm_password:
-            raise ValidationError('Passwords do not match')
+        if password != confirm_password:
+            raise ValidationError("Passwords didn't match.")
 
 
 class LoginForm(forms.Form):
     username = forms.CharField(
-        max_length=100, 
+        max_length=30, 
         label='', 
         widget=forms.TextInput(attrs={
-            'placeholder': 'Your Username',
+            'placeholder': 'Username...',
             'class': 'form-control',
         }),
     )
     password = forms.CharField(
-        max_length=200, 
+        max_length=128, 
         label='', 
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'Your Password',
+            'placeholder': 'Password...',
             'class': 'form-control',
         }),
     )
@@ -144,20 +147,20 @@ class LoginForm(forms.Form):
 
 class ResetPasswordForm(forms.Form):
     password = forms.CharField(
-        max_length=200,
+        max_length=128,
         min_length=4,
         label='', 
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'New Password',
+            'placeholder': 'New Password...',
             'class': 'form-control',
         }),
     )
     confirm_password = forms.CharField(
-        max_length=200,
+        max_length=128,
         min_length=4,
         label='', 
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'Confirm Password',
+            'placeholder': 'Confirm Password...',
             'class': 'form-control',
         }),
     )
@@ -167,8 +170,8 @@ class ResetPasswordForm(forms.Form):
         password = cd.get('password')
         confirm_password = cd.get('confirm_password')
 
-        if password and confirm_password and password != confirm_password:
-            raise ValidationError('Passwords do not match')
+        if password != confirm_password:
+            raise ValidationError("Passwords didn't match.")
 
 
 class AccountEditForm(BaseUserForm):
@@ -177,7 +180,7 @@ class AccountEditForm(BaseUserForm):
         label='',
         required=False,
         widget=forms.Textarea(attrs={
-            'placeholder': 'Your Bio',
+            'placeholder': 'Bio...',
             'class': 'form-control',
         }),
     )
@@ -189,11 +192,12 @@ class AccountEditForm(BaseUserForm):
         }),
     )
     website_url = forms.URLField(
+        max_length=100,
         label='',
         required=False,
         validators=[URLValidator()],
         widget=forms.URLInput(attrs={
-            'placeholder': 'Your website url',
+            'placeholder': 'Website url...',
             'class': 'form-control',
         }),
     )
@@ -201,11 +205,11 @@ class AccountEditForm(BaseUserForm):
 
 class AccountDeleteForm(forms.Form):
     username = forms.CharField(
-        max_length=100,
+        max_length=30,
         label='',
         validators=[UsernameValidator()],
         widget=forms.TextInput(attrs={
-            'placeholder': 'Your Username',
+            'placeholder': 'Username...',
             'class': 'form-control',
         }),
     )
@@ -221,6 +225,20 @@ class StoryCreateForm(forms.ModelForm):
         widgets = {
             'content': forms.Textarea(attrs={
                 'placeholder': 'Write your idea...',
+                'class': 'form-control',
+            }),
+        }
+
+
+class GalleryImageCreateForm(forms.ModelForm):
+    class Meta:
+        model = GalleryImage
+        fields = ['image']
+        labels = {
+            'image': '',
+        }
+        widgets = {
+            'image': forms.FileInput(attrs={
                 'class': 'form-control',
             }),
         }

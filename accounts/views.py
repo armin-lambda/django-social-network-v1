@@ -15,10 +15,9 @@ from utils.pagination import get_pagination_context
 from utils.base import send_otp_code
 from utils.mixins import (
     AnonymousRequiredMixin,
-    OwnerRequiredMixin,
     SelfForbiddenMixin,
 )
-from .models import Relation, Story
+from .models import Relation, Story, GalleryImage
 from .forms import (
     RegisterForm,
     LoginForm,
@@ -26,34 +25,11 @@ from .forms import (
     AccountEditForm,
     AccountDeleteForm,
     StoryCreateForm,
+    GalleryImageCreateForm,
 )
 
 
 User = get_user_model()
-
-
-class PeopleView(LoginRequiredMixin, View):
-    template_name = 'accounts/people.html'
-
-    def get(self, request):
-        # users = User.objects.all()
-        users = User.objects.annotate(
-            followers_count=Count('followers'),
-        ).order_by('-followers_count')
-
-        if request.GET.get('search'):
-            search = request.GET['search']
-            users = users.filter(
-                Q(username__icontains=search) |
-                Q(email__icontains=search) |
-                Q(first_name__icontains=search) |
-                Q(last_name__icontains=search) |
-                Q(bio__icontains=search)
-            )
-
-        return render(request, self.template_name, {
-            'page_obj': get_pagination_context(request, users, 10),
-        })
 
 
 class RegisterView(AnonymousRequiredMixin, View):
@@ -70,16 +46,12 @@ class RegisterView(AnonymousRequiredMixin, View):
 
         if form.is_valid():
             cd = form.cleaned_data
-            user = User.objects.create_user(
-                username=cd['username'],
-                email=cd['email'],
-                password=cd['password']
-            )
+            user = User.objects.create_user(username=cd['username'], email=cd['email'], password=cd['password'])
             user.first_name = cd['first_name']
             user.last_name = cd['last_name']
             user.phone_number = cd['phone_number']
             user.save()
-            messages.success(request, 'Successfully registered', 'info')
+            messages.success(request, 'Successfully registered', 'success')
             return redirect('accounts:login')
         return render(request, self.template_name, {
             'form': form,
@@ -104,9 +76,9 @@ class LoginView(AnonymousRequiredMixin, View):
 
             if user is not None:
                 login(request, user)
-                messages.success(request, 'Successfully logged in', 'info')
+                messages.success(request, 'Successfully logged in.', 'success')
                 return redirect(request.GET.get('next') or 'social_network')
-            messages.error(request, 'Incorrect Username or Password', 'danger')
+            messages.error(request, 'Incorrect Username or Password.', 'danger')
             return redirect('accounts:login')
         return render(request, self.template_name, {
             'form': form,
@@ -116,7 +88,7 @@ class LoginView(AnonymousRequiredMixin, View):
 class LogoutView(LoginRequiredMixin, View):
     def get(self, request):
         logout(request)
-        messages.success(request, 'Successfully logged out', 'info')
+        messages.success(request, 'Successfully logged out.', 'success')
         return redirect('social_network')
 
 
@@ -129,24 +101,26 @@ class SendOTPCodeView(AnonymousRequiredMixin, View):
         return render(request, self.template_name)
     
     def post(self, request):
-        phone_number = request.POST.get('phone_number')
+        username = request.POST.get('username')
 
-        if User.objects.filter(phone_number=phone_number).exists():
+        if User.objects.filter(username=username).exists():
             """
-            Send otp_code to the phone_number.
+            Send otp_code to phone_number.
             """
+            user = get_object_or_404(User, username=username)
             otp_code = str(random.randint(1000, 9999))
-            send_otp_code(phone_number, otp_code)
+            send_otp_code(user.phone_number, otp_code)
 
             # Just in Dev.
-            print(f"\n\n{phone_number} - {otp_code}\n\n")
+            print(f"\n\n{user.phone_number} - {otp_code}\n\n")
             
-            request.session['phone_number'] = phone_number
+            request.session['username'] = username
+            request.session['phone_number'] = user.phone_number
             request.session['otp_code'] = otp_code
 
-            messages.success(request, 'We sent you a code', 'info')
+            messages.success(request, 'We sent you a code', 'success')
             return redirect('accounts:verify_otp_code')
-        messages.error(request, 'There is no user with this phone number', 'danger')
+        messages.error(request, 'There is no user with this username', 'danger')
         return redirect('accounts:send_otp_code')
 
 
@@ -167,9 +141,9 @@ class VerifyOTPCodeView(AnonymousRequiredMixin, View):
 
         if input_otp_code == real_otp_code:
             request.session['otp_code_verified'] = True
-            messages.success(request, 'The code verified', 'info')
+            messages.success(request, 'The code verified.', 'success')
             return redirect('accounts:reset_password')
-        messages.error(request, 'Incorrect Code', 'danger')
+        messages.error(request, 'Incorrect code.', 'danger')
         return redirect('accounts:verify_otp_code')
 
 
@@ -198,11 +172,12 @@ class ResetPasswordView(AnonymousRequiredMixin, View):
             user.set_password(cd['password'])
             user.save()
 
+            del request.session['username']
             del request.session['phone_number']
             del request.session['otp_code']
             del request.session['otp_code_verified']
 
-            messages.success(request, 'Successfully changed password', 'info')
+            messages.success(request, 'Successfully changed password.', 'success')
             return redirect('accounts:login')
         return render(request, self.template_name, {
             'form': form,
@@ -211,32 +186,36 @@ class ResetPasswordView(AnonymousRequiredMixin, View):
 # ---- END RESET PASSWORD ----
 
 
-class ProfileView(LoginRequiredMixin, View):
-    template_name = 'accounts/profile.html'
+class PeopleView(LoginRequiredMixin, View):
+    template_name = 'accounts/people.html'
 
-    def get(self, request, **kwargs):
-        user = get_object_or_404(User, username=kwargs['username'])
-        stories = user.stories.filter(
-            created_at__gte = timezone.now() - timedelta(hours=24)
-        )
-        is_followed = Relation.objects.filter(from_user=request.user, to_user=user).exists()
+    def get(self, request):
+        # users = User.objects.all()
+        users = User.objects.annotate(
+            followers_count=Count('followers'),
+        ).order_by('-followers_count')
+
+        if request.GET.get('search'):
+            search = request.GET['search']
+            users = users.filter(
+                Q(username__icontains=search) |
+                Q(email__icontains=search) |
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(bio__icontains=search)
+            )
+
         return render(request, self.template_name, {
-            'user': user,
-            'stories': stories,
-            'is_followed': is_followed,
+            'page_obj': get_pagination_context(request, users, 10),
         })
 
 
-class AccountEditView(LoginRequiredMixin, OwnerRequiredMixin, View):
+class AccountEditView(LoginRequiredMixin, View):
     template_name = 'accounts/account_edit.html'
     form_class = AccountEditForm
 
-    def setup(self, request, *args, **kwargs):
-        self.user_instance = get_object_or_404(User, username=kwargs['username'])
-        return super().setup(request, *args, **kwargs)
-
-    def get(self, request, **kwargs):
-        user = self.user_instance
+    def get(self, request):
+        user = request.user
         return render(request, self.template_name, {
             'form': self.form_class(initial={
                 'username': user.username,
@@ -249,12 +228,12 @@ class AccountEditView(LoginRequiredMixin, OwnerRequiredMixin, View):
             }),
         })
     
-    def post(self, request, **kwargs):
+    def post(self, request):
         form = self.form_class(request.POST, request.FILES)
 
         if form.is_valid():
             cd = form.cleaned_data
-            user = self.user_instance
+            user = request.user
 
             if User.objects.filter(username=cd['username']).exclude(username=user.username).exists():
                 form.add_error('username', 'This username already exists')
@@ -278,47 +257,176 @@ class AccountEditView(LoginRequiredMixin, OwnerRequiredMixin, View):
                     user.image = cd['image']
 
                 user.save()
-                messages.success(request, 'Successfully edited account', 'info')
+                messages.success(request, 'Successfully edited account.', 'success')
                 return redirect(user.get_profile_url())
-            return render(request, self.template_name, {
-                'form': form,
-            })
+        return render(request, self.template_name, {
+            'form': form,
+        })
 
 
-class ProfileImageDeleteView(LoginRequiredMixin, OwnerRequiredMixin, View):
-    def get(self, request, **kwargs):
-        user = get_object_or_404(User, username=kwargs['username'])
+class ProfileImageDeleteView(LoginRequiredMixin, View):
+    def get(self, request):
+        user = request.user
 
         if user.image:
             os.remove(user.image.path)
             user.image.delete()
-            messages.success(request, 'Successfully deleted profile image', 'info')
+            messages.success(request, 'Successfully deleted profile image.', 'success')
         return redirect(user.get_profile_url())
 
 
-class AccountDeleteView(LoginRequiredMixin, OwnerRequiredMixin, View):
+class AccountDeleteView(LoginRequiredMixin, View):
     template_name = 'accounts/account_delete.html'
     form_class = AccountDeleteForm
 
-    def get(self, request, **kwargs):
+    def get(self, request):
         return render(request, self.template_name, {
             'form': self.form_class(),
         })
     
-    def post(self, request, **kwargs):
+    def post(self, request):
         form = self.form_class(request.POST)
 
         if form.is_valid():
             cd = form.cleaned_data
-            user = get_object_or_404(User, username=kwargs['username'])
+            user = request.user
             
             if user.username == cd['username']:
+                if user.image:
+                    os.remove(user.image.path)
+                    user.image.delete()
+                
+                if user.gallery_images:
+                    for img in user.get_gallery_images():
+                        os.remove(img.image.path)
+                        img.image.delete()
+
                 user.delete()
-                messages.success(request, 'Successfully deleted account', 'info')
+                messages.success(request, 'Successfully deleted account.', 'success')
                 return redirect('social_network')
-            form.add_error('username', 'Wrong username')
+            form.add_error('username', 'Wrong username.')
         return render(request, self.template_name, {
             'form': form,
+        })
+
+
+class StoryCreateView(LoginRequiredMixin, View):
+    template_name = 'accounts/story_create.html'
+    form_class = StoryCreateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        if user.get_stories_count() >= 24:
+            return redirect(user.get_profile_url())
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        return render(request, self.template_name, {
+            'form': self.form_class(),
+        })
+
+    def post(self, request):
+        form = self.form_class(request.POST)
+
+        if form.is_valid():
+            user = request.user
+            story = form.save(commit=False)
+            story.user = user
+            story.save()
+
+            followers = user.get_followers()
+            notifications = [
+                Notification(
+                    from_user=user,
+                    to_user=f,
+                    notification_type='story',
+                    story=story,
+                )
+                for f in followers
+            ]
+
+            Notification.objects.bulk_create(notifications)
+            messages.success(request, 'Successfully created story.', 'success')
+            return redirect(user.get_profile_url())
+        return render(request, self.template_name, {
+            'form': form,
+        })
+
+
+class StoryDeleteView(LoginRequiredMixin, View):
+    def get(self, request, **kwargs):
+        get_object_or_404(Story, user=request.user, pk=kwargs['pk']).delete()
+        messages.success(request, 'Successfully deleted story', 'success')
+        return redirect(request.user.get_profile_url())
+
+
+class GalleryImageCreateView(LoginRequiredMixin, View):
+    template_name = 'accounts/gallery_image_create.html'
+    form_class = GalleryImageCreateForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        if user.get_gallery_images_count() >= 9:
+            return redirect(user.get_profile_url())
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        return render(request, self.template_name, {
+            'form': self.form_class(),
+        })
+    
+    def post(self, request):
+        form = self.form_class(request.POST, request.FILES)
+
+        if form.is_valid():
+            user = request.user
+            gallery_image = form.save(commit=False)
+            gallery_image.user = user
+            gallery_image.save()
+            messages.success(request, 'Successfully added that image to gallery.', 'success')
+            return redirect(user.get_profile_url())
+        return render(request, self.template_name, {
+            'form': form,
+        })
+
+
+class GalleryImageDeleteView(LoginRequiredMixin, View):
+    def get(self, request, **kwargs):
+        user = request.user
+        image = get_object_or_404(GalleryImage, user=user, pk=kwargs['pk'])
+        os.remove(image.image.path)
+        image.delete()
+        messages.success(request, 'Successfully deleted image from gallery.', 'success')
+        return redirect(user.get_profile_url())
+
+
+class SavedPostsView(LoginRequiredMixin, View):
+    template_name = 'accounts/saved_posts.html'
+
+    def get(self, request):
+        user = request.user
+        posts = user.get_saved_posts()
+        
+        if request.GET.get('search'):
+            search = request.GET['search']
+            posts = posts.filter(body__icontains=search)
+
+        return render(request, self.template_name, {
+            'user': user,
+            'page_obj': get_pagination_context(request, posts, 10),
+        })
+
+
+class ProfileView(LoginRequiredMixin, View):
+    template_name = 'accounts/profile.html'
+
+    def get(self, request, **kwargs):
+        user = get_object_or_404(User, username=kwargs['username'])
+        stories = user.get_stories()
+        return render(request, self.template_name, {
+            'user': user,
+            'stories': stories,
+            'is_followed': Relation.objects.filter(from_user=request.user, to_user=user).exists(),
         })
 
 
@@ -334,7 +442,7 @@ class FollowView(LoginRequiredMixin, SelfForbiddenMixin, View):
                 notification_type='follow',
                 relation=relation,
             )
-            messages.success(request, f"Successfully followed `{user.username}`", 'info')
+            messages.success(request, 'Successfully followed', 'success')
         return redirect(user.get_profile_url())
 
 
@@ -345,7 +453,7 @@ class UnfollowView(LoginRequiredMixin, SelfForbiddenMixin, View):
         
         if relation.exists():
             relation.delete()
-            messages.success(request, f"Successfully unfollowed `{user.username}`", 'info')
+            messages.success(request, 'Successfully unfollowed', 'success')
         return redirect(user.get_profile_url())
 
 
@@ -414,66 +522,3 @@ class PostsView(LoginRequiredMixin, View):
             'user': user,
             'page_obj': get_pagination_context(request, posts, 10),
         })
-
-
-class SavedPostsView(LoginRequiredMixin, OwnerRequiredMixin, View):
-    template_name = 'accounts/saved_posts.html'
-
-    def get(self, request, **kwargs):
-        user = get_object_or_404(User, username=kwargs['username'])
-        posts = user.get_saved_posts()
-        
-        if request.GET.get('search'):
-            search = request.GET['search']
-            posts = posts.filter(body__icontains=search)
-
-        return render(request, self.template_name, {
-            'user': user,
-            'page_obj': get_pagination_context(request, posts, 10),
-        })
-
-
-class StoryCreateView(LoginRequiredMixin, OwnerRequiredMixin, View):
-    template_name = 'accounts/story_create.html'
-    form_class = StoryCreateForm
-
-    def get(self, request, **kwargs):
-        return render(request, self.template_name, {
-            'form': self.form_class(),
-        })
-
-    def post(self, request, **kwargs):
-        form = self.form_class(request.POST)
-
-        if form.is_valid():
-            user = get_object_or_404(User, username=kwargs['username'])
-            story = form.save(commit=False)
-            story.user = user
-            story.save()
-
-            followers = user.get_followers()
-            
-            notifications = [
-                Notification(
-                    from_user=user,
-                    to_user=f,
-                    notification_type='story',
-                    story=story,
-                )
-                for f in followers
-            ]
-
-            Notification.objects.bulk_create(notifications)
-
-            messages.success(request, 'Successfully created story', 'info')
-            return redirect(user.get_profile_url())
-        return render(request, self.template_name, {
-            'form': form,
-        })
-
-
-class StoryDeleteView(LoginRequiredMixin, OwnerRequiredMixin, View):
-    def get(self, request, **kwargs):
-        get_object_or_404(Story, user=request.user, pk=kwargs['pk']).delete()
-        messages.success(request, 'Successfully deleted story', 'info')
-        return redirect(request.user.get_profile_url())

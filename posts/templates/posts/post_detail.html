@@ -5,11 +5,7 @@
 {% block content %}
 
 <div class="container mt-5">
-
-    <!-- Post Card -->
     <div class="card shadow-sm border-0 mb-4">
-
-        <!-- Header -->
         <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
             <div>
                 <a href="{{ post.user.get_profile_url }}" class="fw-bold text-decoration-none">
@@ -20,7 +16,6 @@
                 </div>
             </div>
 
-            <!-- Actions -->
             <div class="d-flex gap-2">
                 {% if request.user == post.user %}
                 <a href="{{ post.get_edit_url }}" class="btn btn-sm btn-outline-primary mx-1">
@@ -41,7 +36,6 @@
                 </a>
                 {% endif %}
                 
-                <!-- save section -->
                 {% if not is_saved %}
                 <a href="{{ post.get_save_url }}" class="btn btn-sm btn-info text-white mx-1">
                     Save {{ post.get_saves_count }}
@@ -53,21 +47,16 @@
                 {% endif %}
             </div>
         </div>
-
-        <!-- Body -->
         <div class="card-body">
             <p class="fs-5 text-secondary">
                 {{ post.body|linebreaks }}
             </p>
         </div>
-
     </div>
 
-    <!-- Comment Form -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <h5 class="mb-3">💬 Leave a Comment</h5>
-
             <form method="post">
                 {% csrf_token %}
 
@@ -95,15 +84,11 @@
         </div>
     </div>
 
-    <!-- Comments -->
     {% if comments %}
     <div class="mt-4">
-
         <h5 class="mb-3">Comments ({{ comments.count }})</h5>
-
         {% for comment in comments %}
         <div class="card shadow-sm border-0 mb-3">
-
             <div class="card-header bg-white border-0">
                 <a href="{{ comment.user.get_profile_url }}" class="fw-bold text-decoration-none">
                     @{{ comment.user.username }}
@@ -118,13 +103,10 @@
                     {{ comment.body|linebreaks }}
                 </p>
             </div>
-
         </div>
         {% endfor %}
-
     </div>
     {% endif %}
-
 </div>
 
 {% endblock %}

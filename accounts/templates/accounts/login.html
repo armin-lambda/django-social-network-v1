@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% load static %}
-
 {% block title %} Login {% endblock %}
 
 {% block content %}
@@ -9,14 +7,11 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-
             <div class="card shadow-sm border-0 p-4">
                 <h3 class="text-center mb-4">Login</h3>
-
                 <form action="" method="post">
                     {% csrf_token %}
 
-                    <!-- Display form errors -->
                     {% if form.errors %}
                         {% for field in form %}
                             {% for error in field.errors %}
@@ -28,26 +23,21 @@
                         {% endfor %}
                     {% endif %}
 
-                    <!-- Form fields -->
                     {% for field in form %}
-                        <div class="form-group">
-                            {{ field }}
-                        </div>
+                    <div class="form-group">
+                        {{ field }}
+                    </div>
                     {% endfor %}
 
-                    <!-- Submit button -->
-                    <button type="submit" class="btn btn-primary w-100 mt-3">Login</button>
+                    <input type="submit" value="Login" class="btn btn-primary w-100 mt-3">
 
-                    <!-- Password reset link -->
                     <div class="text-center mt-3">
-                        <p class="mb-0">Forgot your password? 
+                        <p class="mb-0">Forgot your password?
                             <a href="{% url 'accounts:send_otp_code' %}">Reset Password</a>
                         </p>
                     </div>
-
                 </form>
             </div>
-
         </div>
     </div>
 </div>

@@ -8,7 +8,10 @@ from django.db import models
 from django.utils import timezone
 
 from posts.models import Post
-from utils.paths import get_user_image_upload_path
+from utils.paths import (
+    get_user_image_upload_path,
+    get_gallery_image_upload_path,
+)
 from utils.validators import (
     UsernameValidator,
     NameValidator,
@@ -21,37 +24,36 @@ User = settings.AUTH_USER_MODEL
 
 class CustomUser(AbstractUser):
     username = models.CharField(
-        max_length=150,
+        max_length=30,
         unique=True,
         validators=[UsernameValidator()],
-        help_text='Required. 150 characters or fewer. Lowercase letters, number and _/.',
+        help_text='Required. Unique. 30 characters or fewer. Lowercase letters, numbers, dot and underline only.',
         error_messages={
             'unique': 'This username already exists.',
         },
     )
     email = models.EmailField(
         unique=True,
-        help_text='Required. Must be a valid and unique email address.',
         verbose_name='email address',
+        help_text='Required. Unique. Must be a valid and unique email address.',
         error_messages={
             'unique': 'This email address already exists.',
         },
     )
     first_name = models.CharField(
-        max_length=30,
-        help_text='Required. 30 characters or fewer. Letters only.',
+        max_length=15,
         validators=[NameValidator('First Name')],
+        help_text='Required. 15 characters or fewer. Letters only.',
     )
     last_name = models.CharField(
-        max_length=30,
-        help_text='Required. 30 characters or fewer. Letters only.',
+        max_length=15,
         validators=[NameValidator('Last Name')],
+        help_text='Required. 15 characters or fewer. Letters only.',
     )
-
     phone_number = models.CharField(
         max_length=15,
         unique=True,
-        help_text='Required. 15 characters or fewer.',
+        help_text='Required. Unique. 15 characters or fewer.',
         error_messages={
             'unique': 'This phone number already exists.',
         },
@@ -62,13 +64,14 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True,
         validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg', 'jpeg', 'gif'])],
+        help_text='Allowed formats: png, jpg, jpeg, gif.',
     )
     website_url = models.URLField(
         max_length=100,
         blank=True,
         null=True,
-        help_text='100 characters or fewer. must starts with https://',
         validators=[URLValidator()],
+        help_text='100 characters or fewer. Must starts with https://',
     )
 
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'phone_number']
@@ -82,13 +85,13 @@ class CustomUser(AbstractUser):
         return reverse('accounts:profile', args=[self.username])
 
     def get_edit_url(self):
-        return reverse('accounts:edit_account', args=[self.username])
+        return reverse('accounts:edit_account')
 
     def get_delete_profile_image_url(self):
-        return reverse('accounts:delete_profile_image', args=[self.username])
+        return reverse('accounts:delete_profile_image')
 
     def get_delete_url(self):
-        return reverse('accounts:delete_account', args=[self.username])
+        return reverse('accounts:delete_account')
 
     def get_follow_url(self):
         return reverse('accounts:follow', args=[self.username])
@@ -124,7 +127,7 @@ class CustomUser(AbstractUser):
         return reverse('accounts:posts', args=[self.username])
     
     def get_saved_posts_url(self):
-        return reverse('accounts:saved_posts', args=[self.username])
+        return reverse('accounts:saved_posts')
     
     def get_saved_posts_count(self):
         return self.saved_posts.count()
@@ -136,10 +139,23 @@ class CustomUser(AbstractUser):
         return self.notifications.filter(is_read=False).count()
     
     def get_create_story_url(self):
-        return reverse('accounts:create_story', args=[self.username])
+        return reverse('accounts:create_story')
     
     def get_stories_count(self):
         return self.stories.count()
+    
+    def get_create_gallery_image_url(self):
+        return reverse('accounts:create_gallery_image')
+    
+    def get_gallery_images_count(self):
+        return self.gallery_images.count()
+    
+    def get_gallery_images(self):
+        return self.gallery_images.all()
+    
+    def get_stories(self):
+        expired_time = timezone.now() - timedelta(hours=24)
+        return self.stories.filter(created_at__gte = expired_time)
 
 
 class Relation(models.Model):
@@ -162,6 +178,8 @@ class Story(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = 'Story'
+        verbose_name_plural = 'Stories'
     
     def __str__(self):
         return f"{self.user.username} - {self.get_short_content()}"
@@ -169,8 +187,20 @@ class Story(models.Model):
     def get_short_content(self):
         return (self.content[:20] + '...') if len(self.content) > 20 else self.content
     
-    def is_expired(self):
-        return self.created_at < timezone.now() - timedelta(minutes=1)
-    
     def get_delete_story_url(self):
-        return reverse('accounts:delete_story', args=[self.user.username, self.pk])
+        return reverse('accounts:delete_story', args=[self.pk])
+
+
+class GalleryImage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gallery_images')
+    image = models.ImageField(
+        upload_to=get_gallery_image_upload_path,
+        validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg', 'jpeg'])],  
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def get_delete_url(self):
+        return reverse('accounts:delete_gallery_image', args=[self.pk])

@@ -24,76 +24,45 @@
 
                 <h4 class="fw-bold mb-0">@{{ user.username }}</h4>
                 
-                {% if user.first_name or user.last_name or user.email %}
                 <div class="text-muted">
                     {{ user.first_name }} {{ user.last_name }} <br>
                     {{ user.email }}
                 </div>
+                
+                {% if user.website_url %}
+                    <a href="{{ user.website_url }}" target="_blank" class="text-decoration-none">{{ user.website_url }}</a>
                 {% endif %}
 
                 {% if user.bio %}
-                <p class="text-secondary mt-3">
-                    {{ user.bio|linebreaks }}
-                </p>
-                {% endif %}
-
-                {% if user.website_url %}
-                <p>
-                    <a href="{{ user.website_url }}" target="_blank"
-                       class="text-decoration-none">
-                        🌐 {{ user.website_url }}
-                    </a>
-                </p>
+                <span class="text-muted mt-2">{{ user.bio|linebreaks }}</span>
                 {% endif %}
 
                 {% if request.user == user %}
-                <div class="d-grid mt-3">
-                    <a href="{{ user.get_edit_url }}" class="btn btn-outline-primary mb-2 mr-2">
-                        Edit Profile
-                    </a>
-                    <a href="{{ user.get_create_post_url }}" class="btn btn-outline-success mb-2 mr-2">
-                        Create Post
-                    </a>
-                    <a href="{{ user.get_create_story_url }}" class="btn btn-outline-warning mb-2 mr-2">
-                        Create Story
-                    </a>
-                    <a href="{% url 'accounts:logout' %}" class="btn btn-outline-secondary mb-2">
-                        Logout
-                    </a>
+                <div class="d-grid {% if not user.bio %}mt-3{% endif %}">
+                    <a href="{{ user.get_edit_url }}" class="btn btn-outline-primary mb-2 mr-2">Edit Profile</a>
+                    <a href="{% url 'accounts:logout' %}" class="btn btn-outline-secondary mb-2">Logout</a>
+                    <a href="{{ user.get_create_post_url }}" class="btn btn-outline-success mb-2 mr-2">Create Post</a>
+                    <a href="{{ user.get_create_story_url }}" class="btn btn-outline-info mb-2 mr-2 {% if user.get_stories_count >= 24 %} disabled {% endif %}">Add Story</a>
+                    <a href="{{ user.get_create_gallery_image_url }}" class="btn btn-outline-dark mb-2 mr-2 {% if user.get_gallery_images_count >= 9 %} disabled {% endif %}">Add Image To Gallery</a>
                 </div>
                 {% endif %}
             </div>
         </div>
 
         <div class="col-lg-8">
-            {% if request.user != user %}
-            <div class="mb-3">
-                {% if not is_followed %}
-                <a href="{{ user.get_follow_url }}" class="btn btn-primary mr-2 mb-2">
-                    Follow
-                </a>
-                {% else %}
-                <a href="{{ user.get_unfollow_url }}" class="btn btn-secondary mr-2 mb-2">
-                    Unfollow
-                </a>
+            <div class="mb-4 mt-1 text-center">
+                {% if request.user != user %}
+                    {% if not is_followed %}
+                    <a href="{{ user.get_follow_url }}" class="btn btn-primary mr-2 mb-2">Follow</a>
+                    {% else %}
+                    <a href="{{ user.get_unfollow_url }}" class="btn btn-danger mr-2 mb-2">Unfollow</a>
+                    {% endif %}
                 {% endif %}
-            </div>
-            {% endif %}
-
-            <div class="mb-4 mt-1">
-                <a href="{{ user.get_followers_url }}" class="btn btn-outline-info mr-2 mb-2">
-                    Followers {{ user.get_followers_count }}
-                </a>
-                <a href="{{ user.get_following_url }}" class="btn btn-outline-info mr-2 mb-2">
-                    Following {{ user.get_following_count }}
-                </a>
-                <a href="{{ user.get_posts_url }}" class="btn btn-outline-info mr-2 mb-2">
-                    Posts {{ user.get_posts_count }}
-                </a>
+                <a href="{{ user.get_followers_url }}" class="btn btn-outline-info mr-2 mb-2">Followers {{ user.get_followers_count }}</a>
+                <a href="{{ user.get_following_url }}" class="btn btn-outline-info mr-2 mb-2">Following {{ user.get_following_count }}</a>
+                <a href="{{ user.get_posts_url }}" class="btn btn-outline-info mr-2 mb-2">Posts {{ user.get_posts_count }}</a>
                 {% if request.user == user %}
-                <a href="{{ user.get_saved_posts_url }}" class="btn btn-outline-info mr-2 mb-2">
-                    Saved Posts {{ user.get_saved_posts_count }}
-                </a>
+                <a href="{{ user.get_saved_posts_url }}" class="btn btn-outline-info mr-2 mb-2">Saved Posts {{ user.get_saved_posts_count }}</a>
                 {% endif %}
             </div>
 
@@ -103,13 +72,9 @@
                     Danger Zone
                 </div>
                 <div class="card-body">
-                    <a href="{{ user.get_delete_url }}" class="btn btn-danger mr-2 mb-2">
-                        Delete Account
-                    </a>
+                    <a href="{{ user.get_delete_url }}" class="btn btn-danger mr-2 mb-2">Delete Account</a>
                     {% if user.image %}
-                    <a href="{{ user.get_delete_profile_image_url }}" class="btn btn-outline-danger mr-2 mb-2">
-                        Delete Profile Image
-                    </a>
+                    <a href="{{ user.get_delete_profile_image_url }}" class="btn btn-outline-danger mr-2 mb-2">Delete Profile Image</a>
                     {% endif %}
                 </div>
             </div>
@@ -117,24 +82,22 @@
 
             <div class="card border-primary mt-3 shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    Stories ({{ user.get_stories_count }})
+                    Stories ({{ stories.count }})
                 </div>
                 <div class="card-body">
                     {% if stories %}
                         <div class="row">
-                            {% for story in stories %}
-                                <div class="col-12 mb-3">
-                                    <div class="border rounded p-3 bg-light">
-                                        <p class="text-dark mb-2 font-weight-bold">
-                                            {{ story.content }}
-                                        </p>
-                                        <small class="text-muted d-block">
-                                            {{ story.created_at|date:"H:i" }}
-                                        </small>
-                                        <a href="{{ story.get_delete_story_url }}" class="text-danger">Delete</a>
-                                    </div>
+                        {% for story in stories %}
+                            <div class="col-12 mt-1 mb-2">
+                                <div class="border rounded p-3 bg-light">
+                                    <p class="text-dark mb-2 font-weight-bold">{{ story.content }}</p>
+                                    <small class="text-muted d-block">{{ story.created_at|date:"H:i" }}</small>
+                                    {% if request.user == user %}
+                                    <a href="{{ story.get_delete_story_url }}" class="text-danger">Delete</a>
+                                    {% endif %}
                                 </div>
-                            {% endfor %}
+                            </div>
+                        {% endfor %}
                         </div>
                     {% else %}
                     <div class="text-center py-4">
@@ -145,32 +108,32 @@
             </div>
             <div class="card border-dark mt-3 shadow-sm">
                 <div class="card-header bg-dark text-light">
-                    Gallery ({{ user.gallery.count }})
+                    Gallery ({{ user.get_gallery_images_count }})
                 </div>
                 <div class="card-body">
-                    {% if gallery_images %}
-                        <div class="row">
-                            {% for image in gallery_images %}
-                                {% if forloop.counter <= 9 %}
-                                    <div class="col-md-4 mb-3">
-                                        <div class="border rounded bg-light p-2 text-center">
-                                            <img src="{{ image.image.url }}"
-                                                class="img-fluid rounded"
-                                                style="object-fit:cover; width:100%; height:200px;"
-                                                alt="gallery image">
-                                        </div>
-                                    </div>
+                {% if user.get_gallery_images %}
+                    <div class="row">
+                    {% for image in user.get_gallery_images %}
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded bg-light p-2 text-center">
+                                <img src="{{ image.image.url }}"
+                                    class="img-fluid rounded"
+                                    style="object-fit:cover; width:100%; height:200px;"
+                                    alt="gallery image">
+                                {% if request.user == user %}
+                                <a href="{{ image.get_delete_url }}" class="btn btn-outline-danger btn-sm w-100 mt-1">Delete</a>
                                 {% endif %}
-                            {% endfor %}
+                            </div>
                         </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <h5 class="text-muted">No gallery images yet 😕</h5>
-                        </div>
-                    {% endif %}
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <h5 class="text-muted">No gallery images yet 😕</h5>
+                    </div>
+                {% endif %}
                 </div>
             </div>
-
         </div>
     </div>
 </div>

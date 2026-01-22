@@ -1,25 +1,18 @@
 <header class="bg-dark py-3">
     <div class="container d-flex flex-wrap justify-content-between align-items-center">
-
-        <!-- Brand -->
-        <a href="{% url 'social_network' %}" class="text-light h5 mb-0 text-decoration-none">
-            SocialNetwork
-        </a>
-
-        <!-- Navigation Links -->
+        <a href="{% url 'social_network' %}" class="text-light h5 mb-0 text-decoration-none">SocialNetwork</a>
         <nav class="nav">
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'posts:posts' %}" class="nav-link text-light">Explore</a>
-                <a href="{% url 'accounts:people' %}" class="nav-link text-light">People</a>
-                <a href="{% url 'accounts:profile' request.user.username %}" class="nav-link text-light">Profile</a>
-                <a href="{% url 'notifications:notifications' %}" class="nav-link text-light">
-                    Notifications <span class="badge badge-light">{{ request.user.get_notifications_count }}</span>
-                </a>
-            {% else %}
-                <a href="{% url 'accounts:register' %}" class="nav-link text-light">Register</a>
-                <a href="{% url 'accounts:login' %}" class="nav-link text-light">Login</a>
-            {% endif %}
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'posts:posts' %}" class="nav-link text-light" style="text-decoration: none;">Explore</a>
+            <a href="{% url 'accounts:people' %}" class="nav-link text-light" style="text-decoration: none;">People</a>
+            <a href="{% url 'accounts:profile' request.user.username %}" class="nav-link text-light" style="text-decoration: none;">Profile</a>
+            <a href="{% url 'notifications:notifications' %}" class="nav-link text-light" style="text-decoration: none;">
+                Notifications {{ request.user.get_notifications_count }}
+            </a>
+        {% else %}
+            <a href="{% url 'accounts:register' %}" class="nav-link text-light" style="text-decoration: none;">Register</a>
+            <a href="{% url 'accounts:login' %}" class="nav-link text-light" style="text-decoration: none;">Login</a>
+        {% endif %}
         </nav>
-
     </div>
 </header>

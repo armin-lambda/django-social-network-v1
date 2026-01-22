@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% load static %}
-
 {% block title %} Send Code to Reset Password {% endblock %}
 
 {% block content %}
@@ -9,33 +7,17 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-
             <div class="card shadow-sm border-0 p-4">
                 <h3 class="text-center mb-4">Reset Password</h3>
-
                 <form action="" method="post">
                     {% csrf_token %}
 
-                    <!-- Phone Number Field -->
                     <div class="form-group">
-                        <input 
-                            type="tel" 
-                            name="phone_number" 
-                            class="form-control" 
-                            maxlength="15" 
-                            placeholder="Your Phone Number"
-                            required
-                        >
+                        <input type="text" name="username" class="form-control" maxlength="30" placeholder="Username..." required>
                     </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn btn-primary w-100 mt-3">
-                        Send Code
-                    </button>
-
+                    <input type="submit" value="Send Code" class="btn btn-primary w-100 mt-3">
                 </form>
             </div>
-
         </div>
     </div>
 </div>

@@ -53,7 +53,6 @@ class PostCreateView(LoginRequiredMixin, View):
             post.save()
 
             followers = user.get_followers()
-            
             notifications = [
                 Notification(
                     from_user=post.user,
@@ -65,8 +64,7 @@ class PostCreateView(LoginRequiredMixin, View):
             ]
 
             Notification.objects.bulk_create(notifications)
-
-            messages.success(request, 'Successfully created post', 'info')
+            messages.success(request, 'Successfully created post.', 'success')
             return redirect(user.get_profile_url())
         return render(request, self.template_name, {
             'form': form,
@@ -83,13 +81,11 @@ class PostDetailView(LoginRequiredMixin, View):
 
     def get(self, request, **kwargs):
         post = self.post_instance
-        is_liked = Like.objects.filter(user=request.user, post=post).exists() or False
-        is_saved = Save.objects.filter(user=request.user, post=post) or False
         comments = post.comments.all()
         return render(request, self.template_name, {
             'post': post,
-            'is_liked': is_liked,
-            'is_saved': is_saved,
+            'is_liked': Like.objects.filter(user=request.user, post=post).exists() or False,
+            'is_saved': Save.objects.filter(user=request.user, post=post).exists() or False,
             'comments': comments,
             'form': self.form_class(),
         })
@@ -112,7 +108,7 @@ class PostDetailView(LoginRequiredMixin, View):
                     notification_type='comment',
                     comment=comment,
                 )
-            messages.success(request, 'Successfully sent comment', 'info')
+            messages.success(request, 'Successfully sent comment.', 'success')
             return redirect(post.get_absolute_url())
         return render(request, self.template_name, {
             'post': post,
@@ -143,7 +139,7 @@ class PostEditView(LoginRequiredMixin, PostOwnerRequiredMixin, View):
             post = form.save()
             post.user = request.user
             post.save()
-            messages.success(request, 'Successfully edited post', 'info')
+            messages.success(request, 'Successfully edited post', 'success')
             return redirect(post.get_absolute_url())
         return render(request, self.template_name, {
             'form': form,
@@ -153,7 +149,7 @@ class PostEditView(LoginRequiredMixin, PostOwnerRequiredMixin, View):
 class PostDeleteView(LoginRequiredMixin, PostOwnerRequiredMixin, View):
     def get(self, request, **kwargs):
         get_object_or_404(Post, user=request.user, pk=kwargs['pk']).delete()
-        messages.success(request, 'Successfully deleted post', 'info')
+        messages.success(request, 'Successfully deleted post', 'success')
         return redirect(request.user.get_posts_url())
 
 
@@ -172,7 +168,7 @@ class PostLikeView(LoginRequiredMixin, View):
                     like=like
                 )
         
-            messages.success(request, 'Successfully liked post', 'info')
+            messages.success(request, 'Successfully liked post', 'success')
         return redirect(post.get_absolute_url())
 
 
@@ -183,7 +179,7 @@ class PostUnlikeView(LoginRequiredMixin, View):
 
         if like.exists():
             like.delete()
-            messages.success(request, 'Successfully unliked post', 'info')
+            messages.success(request, 'Successfully unliked post', 'success')
         return redirect(post.get_absolute_url())
 
 
@@ -193,7 +189,7 @@ class PostSaveView(LoginRequiredMixin, View):
 
         if not Save.objects.filter(user=request.user, post=post).exists():
             Save.objects.create(user=request.user, post=post)
-            messages.success(request, 'Successfully saved post', 'info')
+            messages.success(request, 'Successfully saved post', 'success')
         return redirect(post.get_absolute_url())
 
 
@@ -204,5 +200,5 @@ class PostUnSaveView(LoginRequiredMixin, View):
 
         if saved.exists():
             saved.delete()
-            messages.success(request, 'Successfully unsaved post', 'info')
+            messages.success(request, 'Successfully unsaved post', 'success')
         return redirect(post.get_absolute_url())

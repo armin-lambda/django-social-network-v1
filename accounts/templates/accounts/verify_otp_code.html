@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% load static %}
-
 {% block title %} Verify Code to Reset Password {% endblock %}
 
 {% block content %}
@@ -9,32 +7,17 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-
             <div class="card shadow-sm border-0 p-4">
                 <h3 class="text-center mb-4">Verify Code</h3>
-
                 <form action="" method="post">
                     {% csrf_token %}
 
-                    <!-- OTP Code Field -->
                     <div class="form-group">
-                        <input 
-                            type="number" 
-                            name="otp_code" 
-                            class="form-control" 
-                            placeholder="Your Code"
-                            required
-                        >
+                        <input type="number" name="otp_code" class="form-control" placeholder="Code..." required>
                     </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn btn-primary w-100 mt-3">
-                        Verify Code
-                    </button>
-
+                    <input type="submit" value="Verify Code" class="btn btn-primary w-100 mt-3">
                 </form>
             </div>
-
         </div>
     </div>
 </div>

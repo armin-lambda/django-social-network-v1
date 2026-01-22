@@ -2,11 +2,7 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 
-
-INVALID_NAMES = [
-    'username', 'email', 'first_name', 'last_name', 'password', 'confirm_password',
-    'register', 'login', 'logout', 'signup', 'signin', 'signout', 'auth', 'users',
-]
+from .base import INVALID_NAMES
 
 
 def apply_regex(value, regex, message=None):
