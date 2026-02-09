@@ -11,20 +11,20 @@
                 value="{{ request.GET.search }}" required>
             <button class="btn btn-primary btn-sm ml-1 mr-1" type="submit">Search</button>
             {% if request.GET.search %}
-            <a href="{{ user.get_posts_url }}" class="btn btn-danger btn-sm">×</a>
+            <a href="{{ user.get_post_list_url }}" class="btn btn-danger btn-sm">×</a>
             {% endif %}
         </div>
     </form>
 
-    {% with posts=page_obj %}
-    {% if posts %}
+    {% with post_list=page_obj %}
+    {% if post_list %}
     <div class="row g-4">
-        {% for post in posts %}
+        {% for post in post_list %}
         <div class="col-lg-6 mt-1 mb-1">
             <div class="card h-100 shadow-sm border-0">
                 <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                     <div>
-                        <a href="{{ post.user.get_profile_url }}" class="fw-bold text-decoration-none">@{{ post.user.username }}</a>
+                        <a href="{{ post.user.get_absolute_url }}" class="fw-bold text-decoration-none">@{{ post.user.username }}</a>
                     </div>
                     <small class="text-muted">{{ post.created_at|date:"M d, Y" }}</small>
                 </div>
@@ -36,7 +36,7 @@
                 <div class="card-footer bg-white border-0 d-flex">
                     <a href="{{ post.get_absolute_url }}" class="btn btn-outline-primary flex-fill mr-2">View More →</a>
                     {% if request.user == user %}
-                    <a href="{{ post.get_edit_url }}" class="btn btn-outline-info flex-fill mr-2">Edit</a>
+                    <a href="{{ post.get_update_url }}" class="btn btn-outline-info flex-fill mr-2">Edit</a>
                     <a href="{{ post.get_delete_url }}" class="btn btn-outline-danger flex-fill">Delete</a>
                     {% endif %}
                 </div>

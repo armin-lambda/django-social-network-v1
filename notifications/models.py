@@ -1,46 +1,59 @@
 from django.db import models
-from django.conf import settings
 from django.urls import reverse
-
-from accounts.models import Relation, Story
-from posts.models import Post, Comment, Like
+from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 
 User = settings.AUTH_USER_MODEL
 
 
 class Notification(models.Model):
-    NOTIFICATION_TYPES = (
-        ('follow', 'Follow'),
-        ('post', 'Post'),
-        ('comment', 'Comment'),
-        ('like', 'Like'),
-        {'story', 'Story'}
+    class Type(models.TextChoices):
+        FOLLOW = 'follow', 'Follow'
+        POST = 'post', 'Post'
+        COMMENT = 'comment', 'Comment'
+        LIKE = 'like', 'Like'
+        STORY = 'story', 'Story'
+
+    from_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='sent_notifications',
+    )
+    to_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='notifications',
     )
 
-    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications')
-    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    type = models.CharField(
+        max_length=20,
+        choices=Type.choices,
+    )
 
-    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
-
-    # relations
-    relation = models.ForeignKey(Relation, on_delete=models.CASCADE, blank=True, null=True)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, blank=True, null=True)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, blank=True, null=True)
-    like = models.ForeignKey(Like, on_delete=models.CASCADE, blank=True, null=True)
-    story = models.ForeignKey(Story, on_delete=models.CASCADE, blank=True, null=True)
+    # generic target (post / comment / relation / like / ...)
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+    )
+    object_id = models.PositiveIntegerField()
+    target = GenericForeignKey('content_type', 'object_id')
 
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
-    
+        indexes = [
+            models.Index(fields=['to_user', 'is_read']),
+        ]
+
     def __str__(self):
-        return f"{self.from_user} -> {self.to_user} [{self.notification_type}]"
-    
+        return f"{self.type} → {self.to_user}"
+
     def get_read_url(self):
-        return reverse('notifications:read', args=[self.pk])
-    
+        return reverse('notifications:notification-read', args=[self.pk])
+
     def get_delete_url(self):
-        return reverse('notifications:delete', args=[self.pk])
+        return reverse('notifications:notification-delete', args=[self.pk])

@@ -1,79 +1,72 @@
-from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.db.models import Count
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 
 from notifications.models import Notification
 from utils.pagination import get_pagination_context
 from utils.mixins import PostOwnerRequiredMixin
 from .models import Post, Like, Save
-from .forms import CommentForm, PostCreateEditForm
+from .forms import PostCreateForm, PostUpdateForm, CommentCreateForm
 
 
 User = get_user_model()
 
 
-class PostsView(LoginRequiredMixin, View):
-    template_name = 'posts/posts.html'
+class PostListView(LoginRequiredMixin, View):
+    template_name = 'posts/post_list.html'
 
     def get(self, request):
-        # posts = Post.objects.all()
-        posts = Post.objects.annotate(
+        post_list = Post.objects.annotate(
             likes_count=Count('likes'),
             comments_count=Count('comments'),
         ).order_by('-likes_count', '-comments_count', '-created_at')
 
         if request.GET.get('search'):
             search = request.GET['search']
-            posts = posts.filter(body__icontains=search)
+            post_list = post_list.filter(body__icontains=search)
 
         return render(request, self.template_name, {
-            'page_obj': get_pagination_context(request, posts, 10),
+            'page_obj': get_pagination_context(request, post_list, 10),
         })
 
 
 class PostCreateView(LoginRequiredMixin, View):
     template_name = 'posts/post_create.html'
-    form_class = PostCreateEditForm
+    form_class = PostCreateForm
 
     def get(self, request):
-        return render(request, self.template_name, {
-            'form': self.form_class(),
-        })
+        return render(request, self.template_name, {'form': self.form_class()})
 
     def post(self, request):
-        form = self.form_class(request.POST)
+        form = self.form_class(request.POST, user=request.user)
 
-        if form.is_valid():
-            user = request.user
-            post = form.save(commit=False)
-            post.user = user
-            post.save()
+        if not form.is_valid():
+            return render(request, self.template_name, {'form': self.form_class()})
+        
+        post = form.save()
+        notifications = [
+            Notification(
+                from_user=request.user,
+                to_user=f,
+                type=Notification.Type.POST,
+                content_type=ContentType.objects.get_for_model(Post),
+                content_id=post.id,
+            )
+            for f in request.user.get_follower_list()
+        ]
+        Notification.objects.bulk_create(notifications)
 
-            followers = user.get_followers()
-            notifications = [
-                Notification(
-                    from_user=post.user,
-                    to_user=f,
-                    notification_type='post',
-                    post=post,
-                )
-                for f in followers
-            ]
-
-            Notification.objects.bulk_create(notifications)
-            messages.success(request, 'Successfully created post.', 'success')
-            return redirect(user.get_profile_url())
-        return render(request, self.template_name, {
-            'form': form,
-        })
+        messages.success(request, 'Post created successfully', 'success')
+        return redirect(request.user.get_absolute_url())
 
 
 class PostDetailView(LoginRequiredMixin, View):
     template_name = 'posts/post_detail.html'
-    form_class = CommentForm
+    form_class = CommentCreateForm
 
     def setup(self, request, *args, **kwargs):
         self.post_instance = get_object_or_404(Post, pk=kwargs['pk'])
@@ -81,76 +74,64 @@ class PostDetailView(LoginRequiredMixin, View):
 
     def get(self, request, **kwargs):
         post = self.post_instance
-        comments = post.comments.all()
         return render(request, self.template_name, {
             'post': post,
             'is_liked': Like.objects.filter(user=request.user, post=post).exists() or False,
             'is_saved': Save.objects.filter(user=request.user, post=post).exists() or False,
-            'comments': comments,
             'form': self.form_class(),
         })
 
     def post(self, request, **kwargs):
         post = self.post_instance
-        comments = post.comments.all()
-        form = self.form_class(request.POST)
+        form = self.form_class(request.POST, user=request.user, post=post)
 
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.user = request.user
-            comment.post = post
-            comment.save()
-            
-            if not request.user == post.user:
-                Notification.objects.create(
-                    from_user=request.user,
-                    to_user=post.user,
-                    notification_type='comment',
-                    comment=comment,
-                )
-            messages.success(request, 'Successfully sent comment.', 'success')
-            return redirect(post.get_absolute_url())
-        return render(request, self.template_name, {
-            'post': post,
-            'comments': comments,
-            'form': form,
-        })
+        if not form.is_valid():
+            return render(request, self.template_name, {'form': form})
+        
+        comment = form.save()
+        Notification.objects.create(
+            from_user=request.user,
+            to_user=post.user,
+            type=Notification.Type.COMMENT,
+            content_type=ContentType.objects.get_for_model(comment),
+            object_id=comment.id,
+        )
+
+        messages.success(request, 'Comment posted successfully', 'success')
+        return redirect(post.get_absolute_url())
 
 
-class PostEditView(LoginRequiredMixin, PostOwnerRequiredMixin, View):
-    template_name = 'posts/post_edit.html'
-    form_class = PostCreateEditForm
+class PostUpdateView(LoginRequiredMixin, PostOwnerRequiredMixin, View):
+    template_name = 'posts/post_update.html'
+    form_class = PostUpdateForm
 
     def setup(self, request, *args, **kwargs):
         self.post_instance = get_object_or_404(Post, pk=kwargs['pk'])
         return super().setup(request, *args, **kwargs)
 
     def get(self, request, **kwargs):
-        post = self.post_instance
         return render(request, self.template_name, {
-            'form': self.form_class(instance=post),
+            'form': self.form_class(initial={
+                'body': self.post_instance.body,
+            }),
         })
 
     def post(self, request, **kwargs):
-        post = self.post_instance
-        form = self.form_class(request.POST, instance=post)
+        form = self.form_class(request.POST, post=self.post_instance)
 
-        if form.is_valid():
-            post = form.save()
-            post.user = request.user
-            post.save()
-            messages.success(request, 'Successfully edited post', 'success')
-            return redirect(post.get_absolute_url())
-        return render(request, self.template_name, {
-            'form': form,
-        })
+        if not form.is_valid():
+            return render(request, self.template_name, {'form': form})
+        
+        form.save()
+        messages.success(request, 'Post edited successfully', 'success')
+        return redirect(self.post_instance.get_absolute_url())
 
 
 class PostDeleteView(LoginRequiredMixin, PostOwnerRequiredMixin, View):
     def get(self, request, **kwargs):
         get_object_or_404(Post, user=request.user, pk=kwargs['pk']).delete()
-        messages.success(request, 'Successfully deleted post', 'success')
-        return redirect(request.user.get_posts_url())
+        messages.success(request, 'Post deleted successfully', 'success')
+        return redirect(request.user.get_post_list_url())
 
 
 class PostLikeView(LoginRequiredMixin, View):
@@ -164,8 +145,9 @@ class PostLikeView(LoginRequiredMixin, View):
                 Notification.objects.create(
                     from_user=request.user,
                     to_user=post.user,
-                    notification_type='like',
-                    like=like
+                    type=Notification.Type.LIKE,
+                    content_type=ContentType.objects.get_for_model(Like),
+                    object_id=like.id,
                 )
         
             messages.success(request, 'Successfully liked post', 'success')
@@ -193,7 +175,7 @@ class PostSaveView(LoginRequiredMixin, View):
         return redirect(post.get_absolute_url())
 
 
-class PostUnSaveView(LoginRequiredMixin, View):
+class PostUnsaveView(LoginRequiredMixin, View):
     def get(self, request, **kwargs):
         post = get_object_or_404(Post, pk=kwargs['pk'])
         saved = Save.objects.filter(user=request.user, post=post)

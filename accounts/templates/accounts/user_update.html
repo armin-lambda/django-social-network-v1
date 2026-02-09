@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 
-{% load static %}
-
-{% block title %} Edit Post {% endblock %}
+{% block title %} Edit Account {% endblock %}
 
 {% block content %}
 
@@ -11,10 +9,10 @@
         <div class="col-md-8">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Edit Post</h4>
+                    <h4 class="mb-0">Edit Account</h4>
                 </div>
                 <div class="card-body">
-                    <form action="" method="post">
+                    <form action="" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         {% if form.errors %}
@@ -29,17 +27,13 @@
                         {% endif %}
 
                         {% for field in form %}
-                        <div class="form-group mb-3">
-                            {{ field.label_tag }}
+                        <div class="form-group">
                             {{ field }}
-                            {% if field.help_text %}
-                            <small class="form-text text-muted">{{ field.help_text }}</small>
-                            {% endif %}
                         </div>
                         {% endfor %}
 
                         <div class="text-center">
-                            <input type="submit" value="Edit Post" class="btn btn-primary mt-2">
+                            <input type="submit" value="Edit Account" class="btn btn-primary mt-2">
                         </div>
                     </form>
                 </div>

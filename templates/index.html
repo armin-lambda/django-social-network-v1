@@ -16,8 +16,8 @@
 
                 {% if not request.user.is_authenticated %}
                 <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
-                    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg mr-1">Register</a>
-                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg ml-1">Login</a>
+                    <a href="{% url 'accounts:user-create' %}" class="btn btn-primary btn-lg mr-1">Register</a>
+                    <a href="{% url 'accounts:user-login' %}" class="btn btn-outline-primary btn-lg ml-1">Login</a>
                 </div>
                 {% endif %}
             </div>

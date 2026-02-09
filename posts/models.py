@@ -21,15 +21,29 @@ class Post(models.Model):
     def get_short_body(self):
         return (self.body[:20] + '...') if len(self.body) > 20 else self.body
 
+    # ----- URLS -----
     def get_absolute_url(self):
-        return reverse('posts:post_detail', args=[self.pk])
+        return reverse('posts:post-detail', args=[self.pk])
 
-    def get_edit_url(self):
-        return reverse('posts:edit_post', args=[self.pk])
+    def get_update_url(self):
+        return reverse('posts:post-update', args=[self.pk])
 
     def get_delete_url(self):
-        return reverse('posts:delete_post', args=[self.pk])
+        return reverse('posts:post-delete', args=[self.pk])
     
+    def get_like_url(self):
+        return reverse('posts:post-like', args=[self.pk])
+    
+    def get_unlike_url(self):
+        return reverse('posts:post-unlike', args=[self.pk])
+    
+    def get_save_url(self):
+        return reverse('posts:post-save', args=[self.pk])
+    
+    def get_unsave_url(self):
+        return reverse('posts:post-unsave', args=[self.pk])
+    
+    # ----- COUNTS -----
     def get_likes_count(self):
         return self.likes.count()
     
@@ -39,17 +53,9 @@ class Post(models.Model):
     def get_saves_count(self):
         return self.saves.count()
     
-    def get_like_url(self):
-        return reverse('posts:like_post', args=[self.pk])
-    
-    def get_unlike_url(self):
-        return reverse('posts:unlike_post', args=[self.pk])
-    
-    def get_save_url(self):
-        return reverse('posts:save_post', args=[self.pk])
-    
-    def get_unsave_url(self):
-        return reverse('posts:unsave_post', args=[self.pk])
+    # ----- LISTS -----
+    def get_comment_list(self):
+        return self.comments.all()
 
 
 class Comment(models.Model):

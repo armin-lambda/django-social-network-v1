@@ -5,35 +5,35 @@ from . import views
 
 app_name = 'accounts'
 urlpatterns = [
-    path('register/', views.RegisterView.as_view(), name='register'),
-    path('login/', views.LoginView.as_view(), name='login'),
-    path('logout/', views.LogoutView.as_view(), name='logout'),
+    path('register/', views.UserCreateView.as_view(), name='user-create'),
+    path('login/', views.UserLoginView.as_view(), name='user-login'),
+    path('logout/', views.UserLogoutView.as_view(), name='user-logout'),
 
-    path('send-otp-code/', views.SendOTPCodeView.as_view(), name='send_otp_code'),
-    path('verify-otp-code/', views.VerifyOTPCodeView.as_view(), name='verify_otp_code'),
-    path('reset-password/', views.ResetPasswordView.as_view(), name='reset_password'),
+    path('reset-password/', views.UserPasswordResetView.as_view(), name='user-password-reset'),
+    path('verify-code/', views.UserPasswordVerifyCodeView.as_view(), name='user-password-verify-code'),
+    path('change-password/', views.UserPasswordChangeView.as_view(), name='user-password-change'),
     
-    path('', views.PeopleView.as_view(), name='people'),
+    path('', views.UserListView.as_view(), name='user-list'),
 
-    path('edit/', views.AccountEditView.as_view(), name='edit_account'),
-    path('delete-profile-image/', views.ProfileImageDeleteView.as_view(), name='delete_profile_image'),
-    path('delete/', views.AccountDeleteView.as_view(), name='delete_account'),
+    path('edit-profile/', views.UserUpdateView.as_view(), name='user-update'),
+    path('delete-profile-image/', views.UserProfileImageDeleteView.as_view(), name='user-profile-image-delete'),
+    path('delete/', views.UserDeleteView.as_view(), name='user-delete'),
 
-    path('create-gallery-image/', views.GalleryImageCreateView.as_view(), name='create_gallery_image'),
-    path('delete-gallery-image/<int:pk>/', views.GalleryImageDeleteView.as_view(), name='delete_gallery_image'),
+    path('create-gallery-image/', views.UserGalleryImageCreateView.as_view(), name='user-gallery-image-create'),
+    path('delete-gallery-image/<int:pk>/', views.UserGalleryImageDeleteView.as_view(), name='user-gallery-image-delete'),
     
-    path('create-story/', views.StoryCreateView.as_view(), name='create_story'),
-    path('delete-story/<int:pk>/', views.StoryDeleteView.as_view(), name='delete_story'),
+    path('create-story/', views.UserStoryCreateView.as_view(), name='user-story-create'),
+    path('delete-story/<int:pk>/', views.UserStoryDeleteView.as_view(), name='user-story-delete'),
     
-    path('saved-posts/', views.SavedPostsView.as_view(), name='saved_posts'),
+    path('saved-posts/', views.UserSavedPostListView.as_view(), name='user-saved-post-list'),
 
-    path('<username>/', views.ProfileView.as_view(), name='profile'),
+    path('<username>/', views.UserDetailView.as_view(), name='user-detail'),
     
-    path('<username>/follow/', views.FollowView.as_view(), name='follow'),
-    path('<username>/unfollow/', views.UnfollowView.as_view(), name='unfollow'),
+    path('<username>/follow/', views.UserFollowView.as_view(), name='user-follow'),
+    path('<username>/unfollow/', views.UserUnfollowView.as_view(), name='user-unfollow'),
 
-    path('<username>/followers/', views.FollowersView.as_view(), name='followers'),
-    path('<username>/following/', views.FollowingView.as_view(), name='following'),
+    path('<username>/followers/', views.UserFollowerListView.as_view(), name='user-follower-list'),
+    path('<username>/following/', views.UserFollowingListView.as_view(), name='user-following-list'),
 
-    path('<username>/posts/', views.PostsView.as_view(), name='posts'),
+    path('<username>/posts/', views.UserPostListView.as_view(), name='user-post-list'),
 ]

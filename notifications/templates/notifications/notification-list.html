@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %} Notifications {% endblock %}
+
+{% block content %}
+
+{% with notification_list=page_obj %}
+    {% if notification_list %}
+        <div class="mt-2 mb-5">
+            {% if can_read_all %}
+            <a href="{% url 'notifications:notification-read-all' %}" class="btn btn-primary">Mark all as Read</a>
+            {% endif %}
+            <a href="{% url 'notifications:notification-delete-all' %}" class="btn btn-danger">Delete All</a>
+        </div>
+        {% for notif in notification_list %}
+            <div class="card mt-2 mb-2">
+                <div class="card-header">
+                    {{ notif.created_at|timesince }} ago
+                </div>
+                <div class="card-body">
+                    {# FOLLOW #}
+                    {% if notif.type == 'follow' %}
+                        <a href="{{ notif.from_user.get_absolute_url }}" class="link">@{{ notif.from_user.username }}</a> followed you.
+
+                    {# POST #}
+                    {% elif notif.type == 'post' %}
+                        <a href="{{ notif.from_user.get_absolute_url }}" class="link">@{{ notif.from_user.username }}</a> 
+                        created a new <a href="{{ notif.target.get_absolute_url }}" class="link">post</a>.
+
+                    {# COMMENT #}
+                    {% elif notif.type == 'comment' %}
+                        <a href="{{ notif.from_user.get_absolute_url }}" class="link">@{{ notif.from_user.username }}</a> 
+                        commented on your <a href="{{ notif.target.post.get_absolute_url }}" class="notif-post">post</a>.
+
+                    {# LIKE #}
+                    {% elif notif.type == 'like' %}
+                        <a href="{{ notif.from_user.get_absolute_url }}" class="link">@{{ notif.from_user.username }}</a> 
+                        liked your <a href="{{ notif.target.post.get_absolute_url }}" class="notif-post">post</a>.
+
+                    {# STORY #}
+                    {% elif notif.type == 'story' %}
+                        <a href="{{ notif.from_user.get_absolute_url }}" class="link">@{{ notif.from_user.username }}</a> 
+                        added a story.
+                    {% endif %}
+                </div>
+                <div class="p-1">
+                    {% if not notif.is_read %}
+                    <a href="{{ notif.get_read_url }}" class="btn btn-primary">Mark as Read</a>
+                    {% endif %}
+                    <a href="{{ notif.get_delete_url }}" class="btn btn-danger">Delete</a>
+                </div>
+            </div>
+        {% endfor %}
+        {% include 'includes/pagination.html' %}
+    {% else %}
+    <div class="text-center p-3">
+        <strong>There are no notifications yet.</strong>
+    </div>
+    {% endif %}
+{% endwith %}
+
+{% endblock %}
