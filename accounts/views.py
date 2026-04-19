@@ -64,7 +64,7 @@ class UserLoginView(AnonymousRequiredMixin, View):
         user = form.user
         login(request, user)
         messages.success(request, 'Logged in successfully', 'success')
-        return redirect('social_network')
+        return redirect(request.GET.get('next') or 'social_network')
 
 
 class UserLogoutView(LoginRequiredMixin, View):
@@ -72,6 +72,7 @@ class UserLogoutView(LoginRequiredMixin, View):
         logout(request)
         messages.success(request, 'Logged out successfully', 'success')
         return redirect('social_network')
+
 
 # ---- RESET PASSWORD ----
 
@@ -317,7 +318,7 @@ class UserSavedPostListView(LoginRequiredMixin, View):
 
     def get(self, request):
         user = request.user
-        posts = user.get_saved_posts()
+        posts = user.get_saved_post_list()
         
         if request.GET.get('search'):
             search = request.GET['search']

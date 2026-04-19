@@ -21,21 +21,15 @@
     <div class="row g-4">
         {% for user in user_list %}
         <div class="col-lg-6 mt-1 mb-1">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-header bg-white border-0">
-                    <h5 class="mb-0 text-primary fw-bold">@{{ user.username }}</h5>
-                    <small class="text-muted">{{ user.first_name }} {{ user.last_name }}</small>
-                </div>
-
-                <div class="card-footer bg-white border-0">
-                    <a href="{{ user.get_absolute_url }}" class="btn btn-outline-primary w-100">View Profile →</a>
-                </div>
+            <div class="card h-100 shadow-sm border-1 p-2 rounded bg-light">
+                <h5 class="mb-1 text-primary fw-bold"><a href="{{ user.get_absolute_url }}">@{{ user.username }}</a></h5>
+                <small class="text-muted">{{ user.first_name }} {{ user.last_name }}</small>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <div class="mt-5">
+    <div class="mt-2">
         {% include 'includes/pagination.html' %}
     </div>
 

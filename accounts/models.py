@@ -129,7 +129,7 @@ class CustomUser(AbstractUser):
     def get_gallery_images_count(self):
         return self.gallery_images.count()
 
-    # ----- Lists -----
+    # ----- LISTS -----
     def get_follower_list(self):
         return CustomUser.objects.filter(following__to_user=self)
 
@@ -160,7 +160,7 @@ class Relation(models.Model):
         unique_together = ['from_user', 'to_user']
     
     def __str__(self):
-        return f'{self.from_user} followed {self.to_user}'
+        return f'{self.from_user.username} followed {self.to_user.username}'
 
 
 class Story(models.Model):

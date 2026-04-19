@@ -9,16 +9,16 @@
 <div class="container my-5">
     <div class="row g-4">
         <div class="col-lg-4">
-            <div class="card shadow-sm border-0 text-center p-4">
+            <div class="card shadow-sm border-1 text-center p-4">
                 {% if user.image and user.image.path %}
                 <img src="{{ user.image.url }}"
                      class="rounded-circle mx-auto mb-3"
-                     style="width:150px;height:150px;object-fit:cover;"
+                     style="width:150px;height:150px;object-fit:cover;box-shadow: 0 1px 5px gray;"
                      alt="{{ user.username }}">
                 {% else %}
                 <img src="{% static 'accounts/images/default_profile_image.jpeg' %}"
                      class="rounded-circle mx-auto mb-3"
-                     style="width:150px;height:150px;object-fit:cover;"
+                     style="width:150px;height:150px;object-fit:cover;box-shadow: 0 1px 5px gray;"
                      alt="default profile">
                 {% endif %}
 
