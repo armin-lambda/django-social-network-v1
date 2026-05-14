@@ -9,10 +9,10 @@ from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 
-from notifications.models import Notification
 from utils.pagination import get_pagination_context
 from utils.base import send_sms
 from utils.mixins import AnonymousRequiredMixin, SelfForbiddenMixin
+from notifications.models import Notification
 from .models import Relation, Story, GalleryImage
 from .forms import (
     UserCreateForm,

@@ -37,13 +37,13 @@ class UserBaseForm(forms.Form):
         max_length=30,
         validators=[UsernameValidator()],
         widget=forms.TextInput(attrs={
-            'placeholder': 'Username',
+            'placeholder': 'Username...',
             'class': 'form-control',
         }),
     )
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={
-            'placeholder': 'Email',
+            'placeholder': 'Email...',
             'class': 'form-control',
         }),
     )
@@ -51,7 +51,7 @@ class UserBaseForm(forms.Form):
         max_length=15, 
         validators=[NameValidator('First Name')],
         widget=forms.TextInput(attrs={
-            'placeholder': 'FirstName',
+            'placeholder': 'First Name...',
             'class': 'form-control',
         }),
     )
@@ -59,13 +59,13 @@ class UserBaseForm(forms.Form):
         max_length=15,
         validators=[NameValidator('Last Name')],
         widget=forms.TextInput(attrs={
-            'placeholder': 'LastName',
+            'placeholder': 'Last Name...',
             'class': 'form-control',
         }),
     )
     phone_number = PhoneNumberField(
         widget=forms.TextInput(attrs={
-            'placeholder': 'Phone Number, +981234567890',
+            'placeholder': 'Phone Number with Country Code...',
             'class': 'form-control',
         }),
     )
@@ -76,7 +76,7 @@ class UserCreateForm(UserBaseForm):
         min_length=4,
         max_length=128,
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'Password',
+            'placeholder': 'Password...',
             'class': 'form-control',
         }),
     )
@@ -84,7 +84,7 @@ class UserCreateForm(UserBaseForm):
         min_length=4,
         max_length=128,
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'Confirm Password',
+            'placeholder': 'Confirm Password...',
             'class': 'form-control',
         }),
     )
@@ -129,14 +129,14 @@ class UserLoginForm(forms.Form):
     username = forms.CharField(
         max_length=30,
         widget=forms.TextInput(attrs={
-            'placeholder': 'Username',
+            'placeholder': 'Username...',
             'class': 'form-control',
         }),
     )
     password = forms.CharField(
         max_length=128,
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'Password',
+            'placeholder': 'Password...',
             'class': 'form-control',
         }),
     )
@@ -159,7 +159,7 @@ class UserPasswordResetForm(forms.Form):
     username = forms.CharField(
         max_length=30,
         widget=forms.TextInput(attrs={
-            'placeholder': 'Username',
+            'placeholder': 'Username...',
             'class': 'form-control',
         }),
     )
@@ -180,7 +180,7 @@ class UserPasswordResetForm(forms.Form):
 class UserPasswordVerifyCodeForm(forms.Form):
     code = forms.IntegerField(
         widget=forms.NumberInput(attrs={
-            'placeholder': 'Code',
+            'placeholder': 'Code...',
             'class': 'form-control',
         }),
     )
@@ -202,7 +202,7 @@ class UserPasswordChangeForm(forms.Form):
         min_length=4,
         max_length=128,
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'New Password',
+            'placeholder': 'New Password...',
             'class': 'form-control',
         }),
     )
@@ -210,7 +210,7 @@ class UserPasswordChangeForm(forms.Form):
         min_length=4,
         max_length=128, 
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'Confirm Password',
+            'placeholder': 'Confirm Password...',
             'class': 'form-control',
         }),
     )
@@ -243,7 +243,7 @@ class UserUpdateForm(UserBaseForm):
         max_length=200,
         required=False,
         widget=forms.Textarea(attrs={
-            'placeholder': 'Bio',
+            'placeholder': 'Bio...',
             'class': 'form-control',
             'rows': 5,
         }),
@@ -260,7 +260,7 @@ class UserUpdateForm(UserBaseForm):
         required=False,
         validators=[URLValidator()],
         widget=forms.URLInput(attrs={
-            'placeholder': 'Website URL',
+            'placeholder': 'Website URL...',
             'class': 'form-control',
         }),
     )
@@ -316,7 +316,7 @@ class UserDeleteForm(forms.Form):
         max_length=30,
         validators=[UsernameValidator()],
         widget=forms.TextInput(attrs={
-            'placeholder': 'Username',
+            'placeholder': 'Username...',
             'class': 'form-control',
         }),
     )
