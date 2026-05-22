@@ -8,7 +8,7 @@
     {% if notification_list %}
         <div class="mt-2 mb-5">
             {% if can_read_all %}
-            <a href="{% url 'notifications:notification-read-all' %}" class="btn btn-primary">Mark all as Read</a>
+                <a href="{% url 'notifications:notification-read-all' %}" class="btn btn-primary">Mark all as Read</a>
             {% endif %}
             <a href="{% url 'notifications:notification-delete-all' %}" class="btn btn-danger">Delete All</a>
         </div>
@@ -45,7 +45,7 @@
                 </div>
                 <div class="p-1">
                     {% if not notif.is_read %}
-                    <a href="{{ notif.get_read_url }}" class="btn btn-primary">Mark as Read</a>
+                        <a href="{{ notif.get_read_url }}" class="btn btn-primary">Mark as Read</a>
                     {% endif %}
                     <a href="{{ notif.get_delete_url }}" class="btn btn-danger">Delete</a>
                 </div>
@@ -53,9 +53,9 @@
         {% endfor %}
         {% include 'includes/pagination.html' %}
     {% else %}
-    <div class="text-center p-3">
-        <strong>There are no notifications yet.</strong>
-    </div>
+        <div class="text-center p-3">
+            <strong>There are no notifications yet.</strong>
+        </div>
     {% endif %}
 {% endwith %}
 

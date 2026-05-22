@@ -11,32 +11,31 @@
                 value="{{ request.GET.search }}" required>
             <button class="btn btn-primary btn-sm ml-1 mr-1" type="submit">Search</button>
             {% if request.GET.search %}
-            <a href="{% url 'accounts:user-list' %}" class="btn btn-danger btn-sm">×</a>
+                <a href="{% url 'accounts:user-list' %}" class="btn btn-danger btn-sm">×</a>
             {% endif %}
         </div>
     </form>
 
     {% with user_list=page_obj %}
     {% if user_list %}
-    <div class="row g-4">
-        {% for user in user_list %}
-        <div class="col-lg-6 mt-1 mb-1">
-            <div class="card h-100 shadow-sm border-1 p-2 rounded bg-light">
-                <h5 class="mb-1 text-primary fw-bold"><a href="{{ user.get_absolute_url }}">@{{ user.username }}</a></h5>
-                <small class="text-muted">{{ user.first_name }} {{ user.last_name }}</small>
+        <div class="row g-4">
+            {% for user in user_list %}
+            <div class="col-lg-6 mt-1 mb-1">
+                <div class="card h-100 shadow-sm border-1 p-2 rounded bg-light">
+                    <h5 class="mb-1 text-primary fw-bold"><a href="{{ user.get_absolute_url }}">@{{ user.username }}</a></h5>
+                    <small class="text-muted">{{ user.first_name }} {{ user.last_name }}</small>
+                </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
 
-    <div class="mt-2">
-        {% include 'includes/pagination.html' %}
-    </div>
-
+        <div class="mt-2">
+            {% include 'includes/pagination.html' %}
+        </div>
     {% else %}
-    <div class="text-center py-5">
-        <h5 class="text-muted">No people found 😕</h5>
-    </div>
+        <div class="text-center py-5">
+            <h5 class="text-muted">No people found 😕</h5>
+        </div>
     {% endif %}
     {% endwith %}
 </div>

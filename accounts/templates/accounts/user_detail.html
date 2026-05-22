@@ -11,15 +11,15 @@
         <div class="col-lg-4">
             <div class="card shadow-sm border-1 text-center p-4">
                 {% if user.image and user.image.path %}
-                <img src="{{ user.image.url }}"
-                     class="rounded-circle mx-auto mb-3"
-                     style="width:150px;height:150px;object-fit:cover;box-shadow: 0 1px 5px gray;"
-                     alt="{{ user.username }}">
+                    <img src="{{ user.image.url }}"
+                        class="rounded-circle mx-auto mb-3"
+                        style="width:150px;height:150px;object-fit:cover;box-shadow: 0 1px 5px gray;"
+                        alt="{{ user.username }}">
                 {% else %}
-                <img src="{% static 'accounts/images/default_profile_image.jpeg' %}"
-                     class="rounded-circle mx-auto mb-3"
-                     style="width:150px;height:150px;object-fit:cover;box-shadow: 0 1px 5px gray;"
-                     alt="default profile">
+                    <img src="{% static 'accounts/images/default_profile_image.jpeg' %}"
+                        class="rounded-circle mx-auto mb-3"
+                        style="width:150px;height:150px;object-fit:cover;box-shadow: 0 1px 5px gray;"
+                        alt="default profile">
                 {% endif %}
 
                 <h4 class="fw-bold mb-0">@{{ user.username }}</h4>
@@ -34,17 +34,17 @@
                 {% endif %}
 
                 {% if user.bio %}
-                <span class="text-muted mt-2">{{ user.bio|linebreaks }}</span>
+                    <span class="text-muted mt-2">{{ user.bio|linebreaks }}</span>
                 {% endif %}
 
                 {% if request.user == user %}
-                <div class="d-grid {% if not user.bio %}mt-3{% endif %}">
-                    <a href="{{ user.get_update_url }}" class="btn btn-outline-primary mb-2 mr-2">Edit Profile</a>
-                    <a href="{% url 'accounts:user-logout' %}" class="btn btn-outline-secondary mb-2">Logout</a>
-                    <a href="{{ user.get_post_create_url }}" class="btn btn-outline-success mb-2 mr-2">Create Post</a>
-                    <a href="{{ user.get_story_create_url }}" class="btn btn-outline-info mb-2 mr-2 {% if user.get_stories_count >= 24 %} disabled {% endif %}">Add Story</a>
-                    <a href="{{ user.get_gallery_image_create_url }}" class="btn btn-outline-dark mb-2 mr-2 {% if user.get_gallery_images_count >= 9 %} disabled {% endif %}">Add Image To Gallery</a>
-                </div>
+                    <div class="d-grid {% if not user.bio %}mt-3{% endif %}">
+                        <a href="{{ user.get_update_url }}" class="btn btn-outline-primary mb-2 mr-2">Edit Profile</a>
+                        <a href="{% url 'accounts:user-logout' %}" class="btn btn-outline-secondary mb-2">Logout</a>
+                        <a href="{{ user.get_post_create_url }}" class="btn btn-outline-success mb-2 mr-2">Create Post</a>
+                        <a href="{{ user.get_story_create_url }}" class="btn btn-outline-info mb-2 mr-2 {% if user.get_stories_count >= 24 %} disabled {% endif %}">Add Story</a>
+                        <a href="{{ user.get_gallery_image_create_url }}" class="btn btn-outline-dark mb-2 mr-2 {% if user.get_gallery_images_count >= 9 %} disabled {% endif %}">Add Image To Gallery</a>
+                    </div>
                 {% endif %}
             </div>
         </div>
@@ -53,31 +53,31 @@
             <div class="mb-4 mt-1 text-center">
                 {% if request.user != user %}
                     {% if not is_followed %}
-                    <a href="{{ user.get_follow_url }}" class="btn btn-primary mr-2 mb-2">Follow</a>
+                        <a href="{{ user.get_follow_url }}" class="btn btn-primary mr-2 mb-2">Follow</a>
                     {% else %}
-                    <a href="{{ user.get_unfollow_url }}" class="btn btn-danger mr-2 mb-2">Unfollow</a>
+                        <a href="{{ user.get_unfollow_url }}" class="btn btn-danger mr-2 mb-2">Unfollow</a>
                     {% endif %}
                 {% endif %}
-                <a href="{{ user.get_follower_list_url }}" class="btn btn-outline-info mr-2 mb-2">Followers {{ user.get_followers_count }}</a>
-                <a href="{{ user.get_following_list_url }}" class="btn btn-outline-info mr-2 mb-2">Following {{ user.get_following_count }}</a>
-                <a href="{{ user.get_post_list_url }}" class="btn btn-outline-info mr-2 mb-2">Posts {{ user.get_posts_count }}</a>
+                    <a href="{{ user.get_follower_list_url }}" class="btn btn-outline-info mr-2 mb-2">Followers {{ user.get_followers_count }}</a>
+                    <a href="{{ user.get_following_list_url }}" class="btn btn-outline-info mr-2 mb-2">Following {{ user.get_following_count }}</a>
+                    <a href="{{ user.get_post_list_url }}" class="btn btn-outline-info mr-2 mb-2">Posts {{ user.get_posts_count }}</a>
                 {% if request.user == user %}
-                <a href="{{ user.get_saved_post_list_url }}" class="btn btn-outline-info mr-2 mb-2">Saved Posts {{ user.get_saved_posts_count }}</a>
+                    <a href="{{ user.get_saved_post_list_url }}" class="btn btn-outline-info mr-2 mb-2">Saved Posts {{ user.get_saved_posts_count }}</a>
                 {% endif %}
             </div>
 
             {% if request.user == user %}
-            <div class="card border-danger">
-                <div class="card-header bg-danger text-white">
-                    Danger Zone
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        Danger Zone
+                    </div>
+                    <div class="card-body">
+                        <a href="{{ user.get_delete_url }}" class="btn btn-danger mr-2 mb-2">Delete Account</a>
+                        {% if user.image %}
+                            <a href="{{ user.get_profile_image_delete_url }}" class="btn btn-outline-danger mr-2 mb-2">Delete Profile Image</a>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="card-body">
-                    <a href="{{ user.get_delete_url }}" class="btn btn-danger mr-2 mb-2">Delete Account</a>
-                    {% if user.image %}
-                    <a href="{{ user.get_profile_image_delete_url }}" class="btn btn-outline-danger mr-2 mb-2">Delete Profile Image</a>
-                    {% endif %}
-                </div>
-            </div>
             {% endif %}
 
             <div class="card border-primary mt-3 shadow-sm">
@@ -93,7 +93,7 @@
                                     <p class="text-dark mb-2 font-weight-bold">{{ story.content }}</p>
                                     <small class="text-muted d-block">{{ story.created_at|date:"H:i" }}</small>
                                     {% if request.user == user %}
-                                    <a href="{{ story.get_delete_url }}" class="text-danger">Delete</a>
+                                        <a href="{{ story.get_delete_url }}" class="text-danger">Delete</a>
                                     {% endif %}
                                 </div>
                             </div>
@@ -121,7 +121,7 @@
                                     style="object-fit:cover; width:100%; height:200px;"
                                     alt="gallery image">
                                 {% if request.user == user %}
-                                <a href="{{ image.get_delete_url }}" class="btn btn-outline-danger btn-sm w-100 mt-1">Delete</a>
+                                    <a href="{{ image.get_delete_url }}" class="btn btn-outline-danger btn-sm w-100 mt-1">Delete</a>
                                 {% endif %}
                             </div>
                         </div>

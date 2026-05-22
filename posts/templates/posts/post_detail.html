@@ -18,32 +18,32 @@
 
             <div class="d-flex gap-2">
                 {% if request.user == post.user %}
-                <a href="{{ post.get_update_url }}" class="btn btn-sm btn-outline-primary mx-1">
-                    Edit
-                </a>
-                <a href="{{ post.get_delete_url }}" class="btn btn-sm btn-outline-danger mx-1">
-                    Delete
-                </a>
+                    <a href="{{ post.get_update_url }}" class="btn btn-sm btn-outline-primary mx-1">
+                        Edit
+                    </a>
+                    <a href="{{ post.get_delete_url }}" class="btn btn-sm btn-outline-danger mx-1">
+                        Delete
+                    </a>
                 {% endif %}
 
                 {% if not is_liked %}
-                <a href="{{ post.get_like_url }}" class="btn btn-sm btn-info text-white mx-1">
-                    👍 Like {{ post.get_likes_count }}
-                </a>
+                    <a href="{{ post.get_like_url }}" class="btn btn-sm btn-info text-white mx-1">
+                        👍 Like {{ post.get_likes_count }}
+                    </a>
                 {% else %}
-                <a href="{{ post.get_unlike_url }}" class="btn btn-sm btn-secondary mx-1">
-                    👎 UnLike {{ post.get_likes_count }}
-                </a>
+                    <a href="{{ post.get_unlike_url }}" class="btn btn-sm btn-secondary mx-1">
+                        👎 UnLike {{ post.get_likes_count }}
+                    </a>
                 {% endif %}
                 
                 {% if not is_saved %}
-                <a href="{{ post.get_save_url }}" class="btn btn-sm btn-info text-white mx-1">
-                    Save {{ post.get_saves_count }}
-                </a>
+                    <a href="{{ post.get_save_url }}" class="btn btn-sm btn-info text-white mx-1">
+                        Save {{ post.get_saves_count }}
+                    </a>
                 {% else %}
-                <a href="{{ post.get_unsave_url }}" class="btn btn-sm btn-secondary mx-1">
-                    UnSave {{ post.get_saves_count }}
-                </a>
+                    <a href="{{ post.get_unsave_url }}" class="btn btn-sm btn-secondary mx-1">
+                        UnSave {{ post.get_saves_count }}
+                    </a>
                 {% endif %}
             </div>
         </div>
@@ -85,27 +85,27 @@
     </div>
 
     {% if post.get_comment_list %}
-    <div class="mt-4">
-        <h5 class="mb-3">Comments ({{ post.get_comments_count }})</h5>
-        {% for comment in post.get_comment_list %}
-        <div class="card shadow-sm border-1 mb-3">
-            <div class="card-header bg-light border-1 p-2">
-                <a href="{{ comment.user.get_absolute_url }}" class="fw-bold text-decoration-none">
-                    @{{ comment.user.username }}
-                </a>
-                <div class="small text-muted">
-                    {{ comment.created_at|date:"M d, Y · H:i" }}
-                </div>
-            </div>
+        <div class="mt-4">
+            <h5 class="mb-3">Comments ({{ post.get_comments_count }})</h5>
+            {% for comment in post.get_comment_list %}
+                <div class="card shadow-sm border-1 mb-3">
+                    <div class="card-header bg-light border-1 p-2">
+                        <a href="{{ comment.user.get_absolute_url }}" class="fw-bold text-decoration-none">
+                            @{{ comment.user.username }}
+                        </a>
+                        <div class="small text-muted">
+                            {{ comment.created_at|date:"M d, Y · H:i" }}
+                        </div>
+                    </div>
 
-            <div class="card-body pt-3 pb-0">
-                <p class="mb-0 text-secondary">
-                    {{ comment.body|linebreaks }}
-                </p>
-            </div>
+                    <div class="card-body pt-3 pb-0">
+                        <p class="mb-0 text-secondary">
+                            {{ comment.body|linebreaks }}
+                        </p>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
     {% endif %}
 </div>
 

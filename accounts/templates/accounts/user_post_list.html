@@ -11,48 +11,47 @@
                 value="{{ request.GET.search }}" required>
             <button class="btn btn-primary btn-sm ml-1 mr-1" type="submit">Search</button>
             {% if request.GET.search %}
-            <a href="{{ user.get_post_list_url }}" class="btn btn-danger btn-sm">×</a>
+                <a href="{{ user.get_post_list_url }}" class="btn btn-danger btn-sm">×</a>
             {% endif %}
         </div>
     </form>
 
     {% with post_list=page_obj %}
     {% if post_list %}
-    <div class="row g-4">
-        {% for post in post_list %}
-        <div class="col-lg-6 mt-1 mb-1">
-            <div class="card h-100 shadow-sm border-1">
-                <div class="card-header bg-light border-1 d-flex justify-content-between align-items-center p-2">
-                    <div>
-                        <a href="{{ post.user.get_absolute_url }}" class="fw-bold text-decoration-none">@{{ post.user.username }}</a>
+        <div class="row g-4">
+            {% for post in post_list %}
+                <div class="col-lg-6 mt-1 mb-1">
+                    <div class="card h-100 shadow-sm border-1">
+                        <div class="card-header bg-light border-1 d-flex justify-content-between align-items-center p-2">
+                            <div>
+                                <a href="{{ post.user.get_absolute_url }}" class="fw-bold text-decoration-none">@{{ post.user.username }}</a>
+                            </div>
+                            <small class="text-muted">{{ post.created_at|date:"M d, Y" }}</small>
+                        </div>
+
+                        <div class="card-body pt-2 pb-2">
+                            <p class="card-text text-secondary">{{ post.body|truncatechars:150 }}</p>
+                        </div>
+
+                        <div class="card-footer bg-white border-1 d-flex p-2">
+                            <a href="{{ post.get_absolute_url }}" class="btn btn-outline-primary flex-fill mr-2">View More →</a>
+                            {% if request.user == user %}
+                                <a href="{{ post.get_update_url }}" class="btn btn-outline-info flex-fill mr-2">Edit</a>
+                                <a href="{{ post.get_delete_url }}" class="btn btn-outline-danger flex-fill">Delete</a>
+                            {% endif %}
+                        </div>
                     </div>
-                    <small class="text-muted">{{ post.created_at|date:"M d, Y" }}</small>
                 </div>
-
-                <div class="card-body pt-2 pb-2">
-                    <p class="card-text text-secondary">{{ post.body|truncatechars:150 }}</p>
-                </div>
-
-                <div class="card-footer bg-white border-1 d-flex p-2">
-                    <a href="{{ post.get_absolute_url }}" class="btn btn-outline-primary flex-fill mr-2">View More →</a>
-                    {% if request.user == user %}
-                    <a href="{{ post.get_update_url }}" class="btn btn-outline-info flex-fill mr-2">Edit</a>
-                    <a href="{{ post.get_delete_url }}" class="btn btn-outline-danger flex-fill">Delete</a>
-                    {% endif %}
-                </div>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
 
-    <div class="mt-5">
-        {% include 'includes/pagination.html' %}
-    </div>
-
+        <div class="mt-5">
+            {% include 'includes/pagination.html' %}
+        </div>
     {% else %}
-    <div class="text-center py-5">
-        <h5 class="text-muted">No posts found 😕</h5>
-    </div>
+        <div class="text-center py-5">
+            <h5 class="text-muted">No posts found 😕</h5>
+        </div>
     {% endif %}
     {% endwith %}
 </div>
