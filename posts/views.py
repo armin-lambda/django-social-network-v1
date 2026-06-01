@@ -89,13 +89,15 @@ class PostDetailView(LoginRequiredMixin, View):
             return render(request, self.template_name, {'form': form})
         
         comment = form.save()
-        Notification.objects.create(
-            from_user=request.user,
-            to_user=post.user,
-            type=Notification.Type.COMMENT,
-            content_type=ContentType.objects.get_for_model(comment),
-            object_id=comment.id,
-        )
+        
+        if request.user != post.user:
+            Notification.objects.create(
+                from_user=request.user,
+                to_user=post.user,
+                type=Notification.Type.COMMENT,
+                content_type=ContentType.objects.get_for_model(comment),
+                object_id=comment.id,
+            )
 
         messages.success(request, 'Comment posted successfully', 'success')
         return redirect(post.get_absolute_url())
